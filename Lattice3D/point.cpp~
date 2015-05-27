@@ -47,9 +47,6 @@ point::point(point* before, int d, int l, int w, int h)
 	z = before->getZ();
 	movePoint(before->getDirectionOut());
 	number = -1;
-	neighbors = new int[4];
-	for(int i=0;i<4;i++)
-		neighbors[i] = -1;
 }
 
 point::~point()

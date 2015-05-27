@@ -159,6 +159,7 @@ lattice::~lattice()
 
 void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice with points
 {
+	numElements = 0;
 	int x, y, z, direction, xMin, yMin, zMin, xMax, yMax, zMax, xOffset, yOffset, zOffset;
 	string dummy, first, tempLine, xIn, yIn, zIn;
 	point* temp;
@@ -179,8 +180,9 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 		{
 			break;
 		}
-		if(first=="HETATM" || first=="MODEL")//creating the linked list
-		{			
+		if(first=="HETATM" || first=="ATOM")//creating the linked list
+		{
+			numElements++;			
 			if(head == NULL)//first item
 			{
 				head = new point(x,y,z);
@@ -212,9 +214,9 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 				}
 				temp = temp->generateNew(direction,l,w,h);
 			}
-			numElements++;
 		}
 	}
+	cout << "num elements " << numElements << "\n";
 	xOffset = l/2 - (xMin+xMax)/2;
 	yOffset = w/2 - (yMin+yMax)/2;
 	zOffset = h/2 - (zMin+zMax)/2;
@@ -779,23 +781,6 @@ float lattice::end2end()//return the distance between the first and the last poi
 	cout << "(" << head->getX() << "," << head->getY() << "," << head->getZ() << ") (" << tail->getX() << "," << tail->getY() << "," << tail->getZ() << ")\n";
 	return sqrt(((head->getX() - tail->getX())*(head->getX() - tail->getX())) + ((head->getY() - tail->getY())*(head->getY() - tail->getY())) + ((head->getZ()-tail->getZ())*(head->getZ()-tail->getZ()))); //distance formula
 }
-
-void lattice::addNeighbor(point* center, point* neighbor)
-{
-	if(neighbor == NULL)//don't add neighbor if there is none
-		return;
-	if(abs(neighbor->getNum()-center->getNum()) <= 1)//don't add if the neighbors are bonded
-		return;
-	else
-	{
-		int i=0;
-		while(center->neighbors[i] != -1)//find an unoccupied space
-			i++;
-		center->neighbors[i] = neighbor->getNum();//set the neighbor into the array
-		return;
-	}
-}
-
 
 
 

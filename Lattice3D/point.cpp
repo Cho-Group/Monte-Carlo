@@ -21,7 +21,6 @@ point::point()
 	y = 0;
 	z = 0;
 	number = -1;
-	neighbors = new int[4];
 }
 
 point::point(int a, int b, int c)

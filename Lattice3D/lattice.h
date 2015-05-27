@@ -18,6 +18,7 @@ X- = 6
 class lattice
 {
 	public:
+		friend class goal;
 		lattice();//create an empty lattice
 		lattice(int n);//create a lattice with n points
 		~lattice();

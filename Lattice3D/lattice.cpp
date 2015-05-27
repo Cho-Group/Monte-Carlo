@@ -159,6 +159,7 @@ lattice::~lattice()
 
 void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice with points
 {
+	numElements = 0;
 	int x, y, z, direction, xMin, yMin, zMin, xMax, yMax, zMax, xOffset, yOffset, zOffset;
 	string dummy, first, tempLine, xIn, yIn, zIn;
 	point* temp;
@@ -179,8 +180,9 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 		{
 			break;
 		}
-		if(first=="HETATM" || first=="MODEL")//creating the linked list
-		{			
+		if(first=="HETATM" || first=="ATOM")//creating the linked list
+		{
+			numElements++;			
 			if(head == NULL)//first item
 			{
 				head = new point(x,y,z);
@@ -212,7 +214,6 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 				}
 				temp = temp->generateNew(direction,l,w,h);
 			}
-			numElements++;
 		}
 	}
 	xOffset = l/2 - (xMin+xMax)/2;

@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include "point.h"
+#include "goal.h"
 using namespace std;
 
 /*
@@ -18,6 +19,7 @@ X- = 6
 class lattice
 {
 	public:
+		friend class goal;
 		lattice();//create an empty lattice
 		lattice(int n);//create a lattice with n points
 		~lattice();
@@ -47,6 +49,5 @@ class lattice
 		bool isEarly(point* pivot, point* current, int rotation);
 		int* getNewPoints(int rotation, point* current, point* pivot);
 		int getDirection(int x, int y, int z, point* temp);//determine out direction given two points
-		
 };
 #endif

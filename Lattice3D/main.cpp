@@ -1,10 +1,13 @@
-#include "lattice.h"
-#include "point.h"
 #include <iostream>
 #include <stdlib.h>
+#include "goal.h"
+#include "lattice.h"
+#include "point.h"
+#include "neighbor.h"
 using namespace std;
 
-int main(int argc, char*argv[])//fileIn fileOut numShifts 
+//basic Monte-Carlo
+/*int main(int argc, char*argv[])//fileIn fileOut numShifts 
 {	
 	if(argc > 4)
 	{
@@ -38,4 +41,20 @@ int main(int argc, char*argv[])//fileIn fileOut numShifts
 		}
 	}
 	return 1;
+}*/
+
+//Metropolis Algorithm
+
+int main(int argc, char* argv[])//filein
+{
+	string fileIn = argv[1];
+	string fileIn2 = argv[2];
+	lattice* theLattice = new lattice();
+	lattice* lattice2 = new lattice();
+	theLattice -> fillpdb(fileIn);
+	lattice2 -> fillpdb(fileIn2);
+	goal* theTemplate = new goal(theLattice);
+	cout << theTemplate -> check(lattice2) << "\n";
+	return 1;
+	
 }
