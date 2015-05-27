@@ -1,0 +1,8 @@
+lattice3d:lattice.o point.o main.o
+	g++ -o lattice3d lattice.o point.o main.o
+main.o:main.cpp lattice.h point.h
+	g++ -c main.cpp
+lattice.o:lattice.h lattice.cpp point.h
+	g++ -c lattice.cpp
+point.o:point.h point.cpp
+	g++ -c point.cpp

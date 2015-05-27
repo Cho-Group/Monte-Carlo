@@ -1,0 +1,20 @@
+#ifndef NEIGHBORS_H
+#define NEIGHBORS_H
+
+struct node
+{
+	int name = 0;
+	node* next = NULL;
+};
+
+class neighbors
+{
+	public:
+		
+	private:
+		int numElements;
+		node** list;
+		isNeighbor(int x, int y, int z);
+};
+
+#endif

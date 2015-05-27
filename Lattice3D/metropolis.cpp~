@@ -1,0 +1,17 @@
+
+
+struct node
+{
+	int name = 0;
+	node* next = NULL;
+};
+
+node** neighbors = new node*[theLattice -> getNumElements()];
+node* cursor;
+for(int i = 0;i<theLattice -> getNumElements();i++)
+{	
+	neighbors[i] = new node;
+	neighbors[i] -> name = i;
+	cursor = neighbors[i];
+}
+

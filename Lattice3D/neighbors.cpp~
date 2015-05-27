@@ -1,0 +1,26 @@
+#include "neighbors.h"
+#include "lattice.cpp"
+using namespace std;
+
+neighbors::neighbors(lattice* theLattice)
+{
+	node* cursor;
+	numElements = theLattice -> getNumElements();
+	list = new node*[theLattice -> getNumElements()];
+	for(int i=0;i<numElements;i++)
+	{
+		cursor = list[i];
+		list[i] -> num() = i;
+		addNeighbor(cursor,a[cursor->getX()+1][cursor->getY()][cursor->getZ()]);
+		addNeighbor(cursor,a[cursor->getX()-1][cursor->getY()][cursor->getZ()]);
+		addNeighbor(cursor,a[cursor->getX()][cursor->getY()+1][cursor->getZ()]);
+		addNeighbor(cursor,a[cursor->getX()][cursor->getY()-1][cursor->getZ()]);
+		addNeighbor(cursor,a[cursor->getX()][cursor->getY()][cursor->getZ()+1]);
+		addNeighbor(cursor,a[cursor->getX()][cursor->getY()][cursor->getZ()-1]);
+	}
+}
+
+bool neighbors::isNeighbor(point* p, int x, int y, int z)
+{
+	
+}
