@@ -23,6 +23,8 @@ class goal
 		~goal();
 		void print();
 		int check(lattice* input);//check lattice against goal(return the number of correct connections)
+		int getConnections(){return connections;}
+		void setConnections(int in){connections = in;return;}
 	private:
 		neighbor** neighbors;//a linked list of which non bonded atoms are neighbors
 		int numNeighbors;//length of neighbors (first dimention)

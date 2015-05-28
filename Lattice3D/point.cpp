@@ -92,3 +92,19 @@ void point::printPoint()
 {
 	cout << "X:" << x << " Y:" << y << " Z:" << z << "\n";
 }
+
+void point::copyPoint(point* otherPoint)
+{
+	directionIn = otherPoint -> getDirectionIn();
+	directionOut = otherPoint -> getDirectionOut();
+	pointIn = otherPoint -> getPointIn();
+	pointOut = otherPoint -> getPointOut();
+	x = otherPoint -> getX();
+	y = otherPoint -> getY();
+	z = otherPoint -> getZ();
+	number = otherPoint -> getNum();
+}
+
+
+
+

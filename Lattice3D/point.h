@@ -38,6 +38,8 @@ class point
 		void setY(int in) {y=in;};
 		void setZ(int in) {z=in;};
 		void setNum(int in) {number=in;};
+		
+		void copyPoint(point* otherPoint);
 	private:
 		int number;//the unique number of the point
 		int directionIn;

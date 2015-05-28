@@ -216,7 +216,6 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 			}
 		}
 	}
-	cout << "num elements " << numElements << "\n";
 	xOffset = l/2 - (xMin+xMax)/2;
 	yOffset = w/2 - (yMin+yMax)/2;
 	zOffset = h/2 - (zMin+zMax)/2;
@@ -273,6 +272,7 @@ bool lattice::shiftPoint(int x, int y, int z)
 		cout << "No data at point specified (" << x << "," << y << "," << z << ")\n";
 		return false;
 	}
+	
 	point* mobile;//the point that's moving
 	point* mobile2; //the second point that's moving (for hinge case)
 	point* hinge;//for the hinge case and the end point case
@@ -286,12 +286,10 @@ bool lattice::shiftPoint(int x, int y, int z)
 		if(mobile->getDirectionIn()==0)
 		{
 			hinge = mobile->getPointOut();
-			hinge -> setDirectionIn(0);
 		}
 		else
 		{
 			hinge = mobile->getPointIn();
-			hinge -> setDirectionOut(0);
 		}
 		
 		newX = hinge->getX();
@@ -309,11 +307,11 @@ bool lattice::shiftPoint(int x, int y, int z)
 		if(newDirection == 3)
 			newZ++;
 		if(newDirection == 4)
-			newX--;
+			newZ--;
 		if(newDirection == 5)
 			newY--;
 		if(newDirection == 6)
-			newZ--;
+			newX--;
 		if(a[newX][newY][newZ]==NULL)//change the point
 		{
 			a[x][y][z] = NULL;
@@ -375,11 +373,11 @@ bool lattice::shiftPoint(int x, int y, int z)
 			if(newDirection == 3)
 				newZ++;
 			if(newDirection == 4)
-				newX--;
+				newZ--;
 			if(newDirection == 5)
 				newY--;
 			if(newDirection == 6)
-				newZ--;
+				newX--;
 				
 			newX2 = hinge2->getX();
 			newY2 = hinge2->getY();
@@ -391,18 +389,18 @@ bool lattice::shiftPoint(int x, int y, int z)
 			if(newDirection == 3)
 				newZ2++;
 			if(newDirection == 4)
-				newX2--;
+				newZ2--;
 			if(newDirection == 5)
 				newY2--;
 			if(newDirection == 6)
-				newZ2--;
+				newX2--;
 				
 			if(a[newX][newY][newZ] != NULL)
 			{
 				cout << "Space (" << newX << "," << newY << "," << newZ << ") already occupied\n";
 				return false;
 			}
-			else if(a[newX2][newY2][newZ2] != NULL)//check to make sure both new points don't intersect with existing array
+			if(a[newX2][newY2][newZ2] != NULL)//check to make sure both new points don't intersect with existing array
 			{
 				cout << "Space (" << newX2 << "," << newY2 << "," << newZ2 << ") already occupied\n";
 				return true;
@@ -450,11 +448,11 @@ bool lattice::shiftPoint(int x, int y, int z)
 			if(newDirection == 3)
 				newZ++;
 			if(newDirection == 4)
-				newX--;
+				newZ--;
 			if(newDirection == 5)
 				newY--;
 			if(newDirection == 6)
-				newZ--;
+				newX--;
 			if(a[newX][newY][newZ]==NULL)//only move if the place to move to is empty
 			{
 				a[mobile->getX()][mobile->getY()][mobile->getZ()] = NULL;//set old point in array to NULL
@@ -463,9 +461,9 @@ bool lattice::shiftPoint(int x, int y, int z)
 				mobile->setX(newX);
 				mobile->setY(newY);
 				mobile->setZ(newZ);
-				newDirection = 7-mobile->getDirectionIn();
+				int oldIn = mobile -> getDirectionIn();				
 				mobile->setDirectionIn(7-mobile->getDirectionOut());
-				mobile->setDirectionOut(newDirection);
+				mobile->setDirectionOut(7-oldIn);
 				mobile->getPointIn()->setDirectionOut(7-mobile->getDirectionIn());
 				mobile->getPointOut()->setDirectionIn(7-mobile->getDirectionOut());
 				
@@ -543,6 +541,22 @@ void lattice::printLattice(const char* fileOut)
 	fprintf(outputFile,"ENDMDL\n\n");
 	model++;
 	fclose(outputFile);
+	return;
+}
+
+void lattice::printLattice()
+{	
+	point* trace = head;
+	int num = 1;
+	printf("MODEL %i\n", model);
+	while(trace != NULL)
+	{
+		printf("%s%7d  %s %s %s%4d    %8.3f%8.3f%8.3f  %4.2f  %4.3f\n", "ATOM", num, "CA ", "GLY", "A", num, (double)(trace->getX()), (double)(trace->getY()), (double)(trace->getZ()), 1.00, 0.00);
+		num++;
+		trace = trace -> getPointOut();
+	}
+	printf("ENDMDL\n\n");
+	model++;
 	return;
 }
 	
@@ -782,7 +796,39 @@ float lattice::end2end()//return the distance between the first and the last poi
 	return sqrt(((head->getX() - tail->getX())*(head->getX() - tail->getX())) + ((head->getY() - tail->getY())*(head->getY() - tail->getY())) + ((head->getZ()-tail->getZ())*(head->getZ()-tail->getZ()))); //distance formula
 }
 
+void lattice::copyLattice(lattice* otherLattice)
+{
+	int x,y,z;
+	point* cursor = head;
+	point* otherCursor = otherLattice -> getHead();
+	model = otherLattice -> getModel();
+	clearArray();
+	while(cursor != NULL)//change the linked list and the array
+	{
+		cursor -> copyPoint(otherCursor);
+		x = cursor -> getX();
+		y = cursor -> getY();
+		z = cursor -> getZ();
+		a[x][y][z] = cursor;
+		cursor = cursor -> getPointOut();
+		otherCursor = otherCursor -> getPointOut();
+	}
+	
+}
 
+void lattice::clearArray()
+{
+	for(int i=0;i<l;i++)
+	{
+		a[i] = new point**[w];
+		for(int j=0;j<w;j++)
+		{
+			a[i][j] = new point*[h];
+			for(int k=0;k<h;k++)
+				a[i][j][k] = NULL;
+		}
+	}
+}
 
 
 

@@ -38,8 +38,6 @@ class point
 		void setY(int in) {y=in;};
 		void setZ(int in) {z=in;};
 		void setNum(int in) {number=in;};
-		
-		int* neighbors;//non bonded points that are next to this point
 	private:
 		int number;//the unique number of the point
 		int directionIn;

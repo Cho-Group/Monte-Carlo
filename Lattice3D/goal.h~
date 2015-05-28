@@ -23,12 +23,13 @@ class goal
 		~goal();
 		void print();
 		int check(lattice* input);//check lattice against goal(return the number of correct connections)
+		int getConnections(){return connections;}
 	private:
 		neighbor** neighbors;//a linked list of which non bonded atoms are neighbors
 		int numNeighbors;//length of neighbors (first dimention)
 		int connections;//total connections
 		void insert(point* current, lattice* input, int num);//helper for constructor
 		int compare(point* current, lattice* input, int num);//helper function for check
-		bool isIn(int index, int data);//returns true if data is in the index list
+		bool isIn(int index, int element);//returns true if elementis in the index list
 };
 #endif

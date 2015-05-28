@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include "point.h"
-#include "goal.h"
 using namespace std;
 
 /*
@@ -23,7 +22,8 @@ class lattice
 		lattice();//create an empty lattice
 		lattice(int n);//create a lattice with n points
 		~lattice();
-		void printLattice(const char* filename);//print the lattice in pdb format
+		void printLattice(const char* filename);//print the lattice in pdb format to a file
+		void printLattice();//print the lattice in pdb format to command line
 		void rotateTail();
 		void fillpdb(string filename);//fill an empty lattice with pdb information
 		bool shiftRandom(); //try to move a random point, return true if the move is successful, else return false
@@ -31,7 +31,11 @@ class lattice
 		bool emptyPoint(int x, int y, int z) {if(a[x][y][z]==NULL)return true; else return false;}
 		int* generateRandom();
 		float end2end(); //return the distance between the first and the last point in the lattice
-		int getNumElements(){return numElements;};
+		int getNumElements(){return numElements;}
+		void copyLattice(lattice* otherLattice);
+		int getModel{return model;}
+		void clearArray();
+		point* getHead(){return head;}
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

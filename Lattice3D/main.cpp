@@ -45,16 +45,63 @@ using namespace std;
 
 //Metropolis Algorithm
 
-int main(int argc, char* argv[])//filein
+int main(int argc, char* argv[])//template fileToChange outputFile
 {
-	string fileIn = argv[1];
-	string fileIn2 = argv[2];
-	lattice* theLattice = new lattice();
-	lattice* lattice2 = new lattice();
-	theLattice -> fillpdb(fileIn);
-	lattice2 -> fillpdb(fileIn2);
-	goal* theTemplate = new goal(theLattice);
-	cout << theTemplate -> check(lattice2) << "\n";
-	return 1;
+	//set up the two lattice (template and the one to change as well as the goal)
+	int overlap = 0; //the overlap between the changing lattice and the goal
+	int temp;
+	int counter = 0;
+	const char* fileOut = argv[3];
+	FILE* outputFile;
+	outputFile = fopen(fileOut, "w");
+	fprintf(outputFile, "");
+	fclose(outputFile);
+	string templateString = argv[1];
+	string changeString = argv[2];
+	lattice* templateLattice = new lattice();
+	lattice* changeLattice = new lattice();
+	lattice* tempLattice = new lattice();
+	templateLattice -> fillpdb(templateString);
+	changeLattice -> fillpdb(changeString);
+	tempLattice -> fillpdb(changeString);
 	
+	goal* theTemplate = new goal(templateLattice);
+	
+	//print origional states
+	
+	int goalConnections = theTemplate -> getConnections();
+	cout << "GOAL LATTICE\t goal state: "<< goalConnections << "\n";
+	templateLattice -> printLattice();
+	cout << "CHANGING LATTICE\n";
+	changeLattice -> printLattice();
+	
+	changeLattice -> printLattice(fileOut);
+	while(overlap < goalConnections)
+	{
+		if(changeLattice->shiftRandom())
+		{	
+			counter++;
+			temp = theTemplate -> check(changeLattice);
+			cout << "Overlap " << temp << "\n";
+			if(temp >= overlap)//if the new state is the same or better keep it
+			{
+				changeLattice -> printLattice(fileOut);
+				overlap = temp;
+				tempLattice -> copyLattice(changeLattice);
+			}
+			else//change it
+			{
+				changeLattice -> copyLattice(tempLattice);
+			}
+					
+		}
+	}
+	cout << "counter: " << counter << "\n";
+	cout << "GOAL BONDS\n";
+	theTemplate -> print();
+	cout << "GOAL LATTICE\n";
+	templateLattice -> printLattice();
+	cout << "CHANGING LATTICE\n";
+	changeLattice -> printLattice();
+	return 1;
 }
