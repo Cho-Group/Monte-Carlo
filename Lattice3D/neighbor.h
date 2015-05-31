@@ -1,7 +1,7 @@
 #ifndef NEIGHBOR_H
 #define NEIGHBOR_H
 
-class neighbor
+class neighbor//node for a linked list
 {
 	public:
 		neighbor(){data = -1;next=0;}

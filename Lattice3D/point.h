@@ -22,21 +22,21 @@ class point
 		void printPoint();
 		
 		//get and set stuff
-		int getDirectionIn() {return directionIn;};
-		int getDirectionOut() {return directionOut;};
-		point* getPointIn() {return pointIn;};
-		point* getPointOut() {return pointOut;};
-		int getX() {return x;};
-		int getY() {return y;};
-		int getZ() {return z;};
-		int getNum() {return number;};
-		void setDirectionIn(int in) {directionIn = in;};
-		void setDirectionOut(int in) {directionOut = in;};
-		void setPointIn(point* in) {pointIn = in;};
-		void setPointOut(point* in) {pointOut = in;};
-		void setX(int in) {x=in;};
-		void setY(int in) {y=in;};
-		void setZ(int in) {z=in;};
+		int getDirectionIn() {return directionIn;}
+		int getDirectionOut() {return directionOut;}
+		point* getPointIn() {return pointIn;}
+		point* getPointOut() {return pointOut;}
+		int getX() {return x;}
+		int getY() {return y;}
+		int getZ() {return z;}
+		int getNum() {return number;}
+		void setDirectionIn(int in) {directionIn = in;}
+		void setDirectionOut(int in) {directionOut = in;}
+		void setPointIn(point* in) {pointIn = in;}
+		void setPointOut(point* in) {pointOut = in;}
+		void setX(int in) {x=in;}
+		void setY(int in) {y=in;}
+		void setZ(int in) {z=in;}
 		void setNum(int in) {number=in;};
 		
 		void copyPoint(point* otherPoint);

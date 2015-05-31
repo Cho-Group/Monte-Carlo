@@ -11,19 +11,19 @@ Y- = 5
 X- = 6
 */
 
-point::point()
+point::point()//create a basic point
 {
 	directionIn = 0;
 	directionOut = 0;
-	point* pointIn;
-	point* pointOut;
+	point* pointIn = NULL;
+	point* pointOut = NULL;
 	x = 0;
 	y = 0;
 	z = 0;
 	number = -1;
 }
 
-point::point(int a, int b, int c)
+point::point(int a, int b, int c)//create a point at (a,b,c)
 {
 	directionIn = 0;
 	directionOut = 0;
@@ -35,9 +35,9 @@ point::point(int a, int b, int c)
 	number = -1;
 }
 
-point::point(point* before, int d, int l, int w, int h)
+point::point(point* before, int d, int l, int w, int h)//create a point to the direction of another point
 {
-	directionIn = (7-before->getDirectionOut());
+	directionIn = (7-before->getDirectionOut());//the location of point* before
 	directionOut = 0;
 	pointIn = before;
 	pointOut = NULL;
@@ -50,9 +50,10 @@ point::point(point* before, int d, int l, int w, int h)
 
 point::~point()
 {
+	//nothing to do here
 }
 
-point* point::generateNew(int d, int l, int w, int h)
+point* point::generateNew(int d, int l, int w, int h)//generates a new point to the direction d of this
 {
 	directionOut = d;
 	pointOut = new point(this, d, l, w, h);
@@ -93,7 +94,7 @@ void point::printPoint()
 	cout << "X:" << x << " Y:" << y << " Z:" << z << "\n";
 }
 
-void point::copyPoint(point* otherPoint)
+void point::copyPoint(point* otherPoint)//copy all values from otherpoint into this
 {
 	directionIn = otherPoint -> getDirectionIn();
 	directionOut = otherPoint -> getDirectionOut();

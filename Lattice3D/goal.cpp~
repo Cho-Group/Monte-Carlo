@@ -53,6 +53,7 @@ void goal::insert(point* current, lattice* input,int num)
 	int xValue = current -> getX();
 	int yValue = current -> getY();		
 	int zValue = current -> getZ();
+	
 	//look through all 6 adjacent spaces
 	adjacent = input -> a[xValue+1][yValue][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
@@ -131,7 +132,7 @@ goal::~goal()
 	delete neighbors;
 }
 
-void goal::print()
+void goal::print()//print with format "atomNumber": "adjacentNumbers"
 {
 	neighbor* cursor;
 	for(int i=0;i<numNeighbors;i++)
@@ -149,7 +150,7 @@ void goal::print()
 	
 }
 
-int goal::check(lattice* input)
+int goal::check(lattice* input)//check lattice against goal and return the number of neighbors they both share
 {
 	int toReturn = 0;
 	if(input -> numElements != numNeighbors)
@@ -164,7 +165,7 @@ int goal::check(lattice* input)
 	return toReturn;
 }
 
-int goal::compare(point* current, lattice* input, int num)
+int goal::compare(point* current, lattice* input, int num)//return the number of same neighbors for one point of the lattice/goal
 {
 	int toReturn = 0;
 	point* adjacent;
@@ -177,8 +178,6 @@ int goal::compare(point* current, lattice* input, int num)
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
-		else
-			toReturn--;
 	}
 	
 	adjacent = input -> a[xValue-1][yValue][zValue];
@@ -218,7 +217,7 @@ int goal::compare(point* current, lattice* input, int num)
 	return toReturn;
 }
 
-bool goal::isIn(int index, int element)
+bool goal::isIn(int index, int element)//returns true if element is a neighbor for neighbors[index]
 {
 	neighbor* cursor = neighbors[index];
 	while(cursor != 0)

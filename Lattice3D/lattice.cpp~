@@ -38,7 +38,7 @@ lattice::lattice()
 				a[i][j][k] = NULL;
 		}
 	}
-	model = 1;
+	model = 0;
 	shortList = NULL;
 }
 
@@ -63,7 +63,7 @@ lattice::lattice(int n)
 	}
 	fillLattice();
 	//create an array with only the active points in them
-	model = 1;
+	model = 0;
 	shortList = new point*[numElements];
 	point* trace = head;
 	int i = 0;
@@ -183,7 +183,7 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 		if(first=="HETATM" || first=="ATOM")//creating the linked list
 		{
 			numElements++;			
-			if(head == NULL)//first item
+			if(head == NULL)//first item create the head
 			{
 				head = new point(x,y,z);
 				xMin = xMax = x;
@@ -193,6 +193,7 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 			}
 			else
 			{
+				//set the upper and lower bounds
 				if(x<xMin)
 					xMin = x;
 				if(x>xMax)
@@ -204,33 +205,40 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 				if(z<zMin)
 					zMin = z;
 				if(z>zMax)
-					zMax = z;					
+					zMax = z;
+					
+										
 				direction = getDirection(x,y,z, temp);
+				
 				if (direction == 0)//points are not next to each other
 				{
 					cout << "ERROR:invalid input file\n";
 					input.close();
 					return;
 				}
-				temp = temp->generateNew(direction,l,w,h);
+				
+				temp = temp->generateNew(direction,l,w,h);//generate the next points
 			}
 		}
 	}
+	//create the offset (what to add to (x,y,z) to make it fit within the bounds of the array)
 	xOffset = l/2 - (xMin+xMax)/2;
 	yOffset = w/2 - (yMin+yMax)/2;
 	zOffset = h/2 - (zMin+zMax)/2;
 	shortList = new point*[numElements];
 	
 	temp = head;
-	for(int i = 0;i<numElements;i++)
+	for(int i = 0;i<numElements;i++)//go through the linked list
 	{
+		//change (x,y,z) to reflex the offest
 		temp->setX(temp->getX()+xOffset);
 		temp->setY(temp->getY()+yOffset);
 		temp->setZ(temp->getZ()+zOffset);
 		
-		if(a[temp->getX()][temp->getY()][temp->getZ()] == NULL)
+		if(a[temp->getX()][temp->getY()][temp->getZ()] == NULL)//make sure no duplicates
 		{
 			temp -> setNum(i);//sets number
+			//place point in the array and in short list
 			shortList[i] = a[temp->getX()][temp->getY()][temp->getZ()] = temp;
 			temp = temp->getPointOut();
 		}
@@ -241,7 +249,7 @@ void lattice::fillpdb(string filename)//read in a pdb file and fill the lattice 
 	return;
 }
 
-int lattice::getDirection(int x,int y,int z, point* temp)
+int lattice::getDirection(int x,int y,int z, point* temp)//given a point and three coordinates, generate the direction of that point
 {
 	if(x-(temp->getX())==1 && (y-temp->getY())==0 && (z-temp->getZ())==0)
 		return 1;
@@ -258,7 +266,7 @@ int lattice::getDirection(int x,int y,int z, point* temp)
 	else
 		return 0;
 }
-bool lattice::shiftRandom()
+bool lattice::shiftRandom()//call shiftPoint on a random point
 {
 	int randInt = rand()%numElements;
 	point* temp = shortList[randInt];
@@ -312,9 +320,11 @@ bool lattice::shiftPoint(int x, int y, int z)
 			newY--;
 		if(newDirection == 6)
 			newX--;
-		if(a[newX][newY][newZ]==NULL)//change the point
+		if(a[newX][newY][newZ]==NULL)//change the point if new spot is open
 		{
-			a[x][y][z] = NULL;
+			a[x][y][z] = NULL;//set old spot to null
+			
+			//change directions in/out from mobile and hinge to reflect new position
 			if(mobile->getDirectionIn()==0)
 			{
 				mobile->setDirectionOut(7-newDirection);
@@ -326,6 +336,7 @@ bool lattice::shiftPoint(int x, int y, int z)
 				hinge->setDirectionOut(newDirection);
 			}
 			
+			//change mobile to reflect new position
 			mobile->setX(newX);
 			mobile->setY(newY);
 			mobile->setZ(newZ);
@@ -525,7 +536,7 @@ point* lattice::chooseElement()
 	return toReturn;
 }
 
-void lattice::printLattice(const char* fileOut)
+void lattice::printLattice(const char* fileOut)//prints data in pdb format to a file
 {
 	FILE* outputFile;
 	outputFile = fopen(fileOut,"a");
@@ -544,11 +555,11 @@ void lattice::printLattice(const char* fileOut)
 	return;
 }
 
-void lattice::printLattice()
+void lattice::printLattice()//prints data in pdb format to command line
 {	
 	point* trace = head;
 	int num = 1;
-	printf("MODEL %i\n", model);
+	printf("MODEL 0\n");
 	while(trace != NULL)
 	{
 		printf("%s%7d  %s %s %s%4d    %8.3f%8.3f%8.3f  %4.2f  %4.3f\n", "ATOM", num, "CA ", "GLY", "A", num, (double)(trace->getX()), (double)(trace->getY()), (double)(trace->getZ()), 1.00, 0.00);
@@ -556,7 +567,6 @@ void lattice::printLattice()
 		trace = trace -> getPointOut();
 	}
 	printf("ENDMDL\n\n");
-	model++;
 	return;
 }
 	
@@ -666,7 +676,7 @@ bool lattice::isEarly(point* pivot, point* current, int rotation)
 	return false;
 }
 
-int* lattice::getNewPoints(int rotation, point* current, point* pivot)
+int* lattice::getNewPoints(int rotation, point* current, point* pivot)//given a roation, a current point and a pivot point; returns (x,y,z) of the new point
 {
 	int xDisplace, yDisplace, zDisplace,funcX, funcY, funcZ;//displacement based on the pivot
 	xDisplace = pivot->getX();
@@ -779,7 +789,7 @@ int* lattice::getNewPoints(int rotation, point* current, point* pivot)
 	There is some overlap among the flips
 	*/
 
-int* lattice::generateRandom()
+int* lattice::generateRandom()//generate a random(x,y,z)
 {
 	int* toReturn = new int(3);
 	int index = rand()%numElements;
@@ -796,38 +806,29 @@ float lattice::end2end()//return the distance between the first and the last poi
 	return sqrt(((head->getX() - tail->getX())*(head->getX() - tail->getX())) + ((head->getY() - tail->getY())*(head->getY() - tail->getY())) + ((head->getZ()-tail->getZ())*(head->getZ()-tail->getZ()))); //distance formula
 }
 
-void lattice::copyLattice(lattice* otherLattice)
+void lattice::copyLattice(lattice* otherLattice)//create an exact copy of another lattice
 {
 	int x,y,z;
-	point* cursor = head;
-	point* otherCursor = otherLattice -> getHead();
 	model = otherLattice -> getModel();
 	clearArray();
-	while(cursor != NULL)//change the linked list and the array
+	for(int i=0;i<numElements;i++)
 	{
-		cursor -> copyPoint(otherCursor);
-		x = cursor -> getX();
-		y = cursor -> getY();
-		z = cursor -> getZ();
-		a[x][y][z] = cursor;
-		cursor = cursor -> getPointOut();
-		otherCursor = otherCursor -> getPointOut();
+		shortList[i] -> copyPoint(otherLattice -> shortList[i]);
+		x = shortList[i] -> getX();
+		y = shortList[i] -> getY();
+		z = shortList[i] -> getZ();
+		a[x][y][z] = shortList[i];
 	}
-	
+	return;
 }
 
 void lattice::clearArray()
 {
 	for(int i=0;i<l;i++)
-	{
-		a[i] = new point**[w];
 		for(int j=0;j<w;j++)
-		{
-			a[i][j] = new point*[h];
 			for(int k=0;k<h;k++)
 				a[i][j][k] = NULL;
-		}
-	}
+	return;
 }
 
 

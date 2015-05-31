@@ -35,7 +35,6 @@ class lattice
 		void copyLattice(lattice* otherLattice);
 		int getModel(){return model;}
 		void clearArray();
-		point* getHead(){return head;}
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

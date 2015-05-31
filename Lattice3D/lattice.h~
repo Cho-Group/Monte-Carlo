@@ -19,6 +19,7 @@ class lattice
 {
 	public:
 		friend class goal;
+		friend class lattice;
 		lattice();//create an empty lattice
 		lattice(int n);//create a lattice with n points
 		~lattice();
@@ -33,9 +34,8 @@ class lattice
 		float end2end(); //return the distance between the first and the last point in the lattice
 		int getNumElements(){return numElements;}
 		void copyLattice(lattice* otherLattice);
-		int getModel{return model;}
+		int getModel(){return model;}
 		void clearArray();
-		point* getHead(){return head;}
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

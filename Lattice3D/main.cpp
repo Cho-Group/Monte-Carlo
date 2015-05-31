@@ -50,25 +50,27 @@ int main(int argc, char* argv[])//template fileToChange outputFile
 	//set up the two lattice (template and the one to change as well as the goal)
 	int overlap = 0; //the overlap between the changing lattice and the goal
 	int temp;
-	int counter = 0;
-	const char* fileOut = argv[3];
-	FILE* outputFile;
-	outputFile = fopen(fileOut, "w");
-	fprintf(outputFile, "");
-	fclose(outputFile);
+	const char* fileOut = argv[3];//output file string
+	FILE* outputFile; //output file
 	string templateString = argv[1];
 	string changeString = argv[2];
-	lattice* templateLattice = new lattice();
-	lattice* changeLattice = new lattice();
-	lattice* tempLattice = new lattice();
+	lattice* templateLattice = new lattice();//lattice to create goal class
+	lattice* changeLattice = new lattice();//lattice to be changed to equal template lattice
+	lattice* tempLattice = new lattice();//backup of changeLattice
+	
+	//fill lattices with appropriate pdb information
 	templateLattice -> fillpdb(templateString);
 	changeLattice -> fillpdb(changeString);
 	tempLattice -> fillpdb(changeString);
 	
+	//clear output file
+	outputFile = fopen(fileOut, "w");
+	fprintf(outputFile, "");
+	fclose(outputFile);
+	
 	goal* theTemplate = new goal(templateLattice);
 	
-	//print origional states
-	
+	//print original states to command line
 	int goalConnections = theTemplate -> getConnections();
 	cout << "GOAL LATTICE\t goal state: "<< goalConnections << "\n";
 	templateLattice -> printLattice();
@@ -76,27 +78,26 @@ int main(int argc, char* argv[])//template fileToChange outputFile
 	changeLattice -> printLattice();
 	
 	changeLattice -> printLattice(fileOut);
-	while(overlap < goalConnections)
+	while(overlap < goalConnections)//while the two lattices still aren't the same
 	{
-		if(changeLattice->shiftRandom())
+		if(changeLattice->shiftRandom())//make a random move, continue if the move was sucessful (there was no overlap)
 		{	
-			counter++;
 			temp = theTemplate -> check(changeLattice);
-			cout << "Overlap " << temp << "\n";
 			if(temp >= overlap)//if the new state is the same or better keep it
 			{
+				cout << "Model Number " << changeLattice -> getModel() << "\n";
 				changeLattice -> printLattice(fileOut);
 				overlap = temp;
 				tempLattice -> copyLattice(changeLattice);
 			}
-			else//change it
+			else//change it back
 			{
+				cout << "TEST\n";
 				changeLattice -> copyLattice(tempLattice);
-			}
-					
+			}					
 		}
 	}
-	cout << "counter: " << counter << "\n";
+	//print the final state
 	cout << "GOAL BONDS\n";
 	theTemplate -> print();
 	cout << "GOAL LATTICE\n";
