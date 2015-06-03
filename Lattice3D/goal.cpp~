@@ -115,7 +115,7 @@ void goal::insert(point* current, lattice* input,int num)
 		nTrace = nCursor;
 	}
 }
-goal::~goal()
+goal::~goal()//delete goal
 {
 	neighbor* cursor;
 	neighbor* forward;
@@ -159,7 +159,9 @@ int goal::check(lattice* input)//check lattice against goal and return the numbe
 	{
 		for(int i=0;i<numNeighbors;i++)
 		{
+			cout << "TESTq\n";
 			toReturn += compare(input -> shortList[i],input,i);
+			cout << "TESTw\n";
 		}
 	}
 	return toReturn;
@@ -176,38 +178,34 @@ int goal::compare(point* current, lattice* input, int num)//return the number of
 	adjacent = input -> a[xValue+1][yValue][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
+		
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue-1][yValue][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue+1][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue-1][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue][zValue+1];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue][zValue-1];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{

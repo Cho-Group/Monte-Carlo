@@ -280,7 +280,10 @@ bool lattice::shiftPoint(int x, int y, int z)
 		cout << "No data at point specified (" << x << "," << y << "," << z << ")\n";
 		return false;
 	}
-	
+	if(x<5 || x > l-5 || y < 5 || y > w-5 || z < 5 || z > h-5)//too close to the edge
+	{
+		recenter();
+	}
 	point* mobile;//the point that's moving
 	point* mobile2; //the second point that's moving (for hinge case)
 	point* hinge;//for the hinge case and the end point case
@@ -341,12 +344,10 @@ bool lattice::shiftPoint(int x, int y, int z)
 			mobile->setY(newY);
 			mobile->setZ(newZ);
 			a[newX][newY][newZ]=mobile;
-			cout << "End point move successfull\n";
 			return true;//transformation has been made
 		}
 		else
 		{
-			cout << "Space (" << newX << "," << newY << "," << newZ << ") already occupied\n";
 			return false;
 		}
 	}
@@ -408,13 +409,11 @@ bool lattice::shiftPoint(int x, int y, int z)
 				
 			if(a[newX][newY][newZ] != NULL)
 			{
-				cout << "Space (" << newX << "," << newY << "," << newZ << ") already occupied\n";
 				return false;
 			}
 			if(a[newX2][newY2][newZ2] != NULL)//check to make sure both new points don't intersect with existing array
 			{
-				cout << "Space (" << newX2 << "," << newY2 << "," << newZ2 << ") already occupied\n";
-				return true;
+				return false;
 			}
 			else
 			{
@@ -441,7 +440,6 @@ bool lattice::shiftPoint(int x, int y, int z)
 				//set new points in array equal to mobile and mobile2
 				a[mobile->getX()][mobile->getY()][mobile->getZ()] = mobile;
 				a[mobile2->getX()][mobile2->getY()][mobile2->getZ()] = mobile2;
-				cout << "Hinge move successfull\n";
 				return true;//transformation has been made
 			}
 		}		
@@ -479,19 +477,16 @@ bool lattice::shiftPoint(int x, int y, int z)
 				mobile->getPointOut()->setDirectionIn(7-mobile->getDirectionOut());
 				
 				a[mobile->getX()][mobile->getY()][mobile->getZ()] = mobile;//set new point in array to mobile
-				cout << "corner move successfull\n";
 				return true;//transformation has been made
 			}
 			else
 			{
-				cout << "Space (" << newX << "," << newY << "," << newZ << ") already occupied\n";
 				return false;
 			}
 		}
 	}
 	else
 	{
-		cout << "straight angle, no moves possible\n";
 		return false;
 	}
 }
@@ -802,7 +797,6 @@ int* lattice::generateRandom()//generate a random(x,y,z)
 float lattice::end2end()//return the distance between the first and the last point of the lattice
 {
 	point* tail = shortList[numElements-1];
-	cout << "(" << head->getX() << "," << head->getY() << "," << head->getZ() << ") (" << tail->getX() << "," << tail->getY() << "," << tail->getZ() << ")\n";
 	return sqrt(((head->getX() - tail->getX())*(head->getX() - tail->getX())) + ((head->getY() - tail->getY())*(head->getY() - tail->getY())) + ((head->getZ()-tail->getZ())*(head->getZ()-tail->getZ()))); //distance formula
 }
 
@@ -811,7 +805,7 @@ void lattice::copyLattice(lattice* otherLattice)//create an exact copy of anothe
 	int x,y,z;
 	model = otherLattice -> getModel();
 	clearArray();
-	for(int i=0;i<numElements;i++)
+	for(int i=0;i<numElements;i++)//go through short list and copy all points from otherLattice short list, then copy into array
 	{
 		shortList[i] -> copyPoint(otherLattice -> shortList[i]);
 		x = shortList[i] -> getX();
@@ -822,7 +816,7 @@ void lattice::copyLattice(lattice* otherLattice)//create an exact copy of anothe
 	return;
 }
 
-void lattice::clearArray()
+void lattice::clearArray()//make every entry in array a NULL
 {
 	for(int i=0;i<l;i++)
 		for(int j=0;j<w;j++)
@@ -831,6 +825,35 @@ void lattice::clearArray()
 	return;
 }
 
-
+void lattice::recenter()
+{
+	int xMin = l;
+	int yMin = w;
+	int zMin = h;
+	int xMax = 0;
+	int yMax = 0;
+	int zMax = 0;
+	int xOffset,yOffset,zOffset;
+	
+	for(int i=0;i<numElements;i++)
+	{
+		if(shortList[i] -> getX() < xMin)
+			xMin = shortList[i] -> getX();
+		if(shortList[i] -> getY() < yMin)
+			yMin = shortList[i] -> getY();
+		if(shortList[i] -> getZ() < zMin)
+			zMin = shortList[i] -> getZ();
+		if(shortList[i] -> getX() > xMax)
+			xMax = shortList[i] -> getX();
+		if(shortList[i] -> getY() > yMax)
+			yMax = shortList[i] -> getY();
+		if(shortList[i] -> getZ() > zMax)
+			zMax = shortList[i] -> getZ();
+	}
+	xOffset = (l-xMin-xMax)/2;
+	yOffset = (w-yMin-yMax)/2;
+	zOffset = (h-zMin-zMax)/2;
+	for(int i=0;i<numElements;i++)
+}
 
 

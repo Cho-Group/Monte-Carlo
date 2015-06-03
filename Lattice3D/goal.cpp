@@ -176,38 +176,34 @@ int goal::compare(point* current, lattice* input, int num)//return the number of
 	adjacent = input -> a[xValue+1][yValue][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
+		
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue-1][yValue][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue+1][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue-1][zValue];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue][zValue+1];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{
 		if(isIn(num, adjacent -> getNum()))
 			toReturn++;
 	}
-	
 	adjacent = input -> a[xValue][yValue][zValue-1];
 	if(adjacent != 0 && abs(adjacent->getNum() - current->getNum()) > 1)//not bonded and not empty
 	{

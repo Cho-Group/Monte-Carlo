@@ -27,7 +27,7 @@ class goal
 		void setConnections(int in){connections = in;return;}
 	private:
 		neighbor** neighbors;//a linked list of which non bonded atoms are neighbors
-		int numNeighbors;//length of neighbors (first dimention)
+		int numNeighbors;//length of neighbors
 		int connections;//total connections
 		void insert(point* current, lattice* input, int num);//helper for constructor
 		int compare(point* current, lattice* input, int num);//helper function for check
