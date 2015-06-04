@@ -36,6 +36,10 @@ class lattice
 		int getModel(){return model;}
 		void clearArray();
 		void recenter();//recenter the molecule
+		int getX(int num){return shortList[num] -> getX();}
+		int getY(int num){return shortList[num] -> getY();}
+		int getZ(int num){return shortList[num] -> getZ();}
+		point* getPoint(int x, int y, int z){return a[x][y][z];}
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

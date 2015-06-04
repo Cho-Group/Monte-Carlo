@@ -35,6 +35,11 @@ class lattice
 		void copyLattice(lattice* otherLattice);
 		int getModel(){return model;}
 		void clearArray();
+		void recenter();//recenter the molecule
+		int getX(int num){return shortList[num] -> getX();}
+		int getY(int num){return shortList[num] -> getY();}
+		int getZ(int num){return shortList[num] -> getZ();}
+		point* getPoint(int x, int y, int z){if(a[x][y][z] == NULL)return NULL;else return a[x][y][z];}
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

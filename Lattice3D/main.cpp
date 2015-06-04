@@ -1,15 +1,28 @@
 #include <iostream>
-#include <stdlib.h>
-#include <math.h>
+//#include <stdlib.h>
+#include <cmath>
 #include "goal.h"
 #include "lattice.h"
 #include "point.h"
 #include "neighbor.h"
 using namespace std;
 
-double* WangLandau(lattice* inputLattice, goal* theTemplate);
+struct bond
+{
+	int num;//number of the bonded element
+	int x;//x displacement
+	int y;//y displacement
+	int z;//z displacement
+};
+void WangLandau(lattice* inputLattice, lattice* templateLattice);
+void WangLandau2(lattice* inputLattice, lattice* templateLattice);
 double min(double in1, double in2);
 bool isFlat(int* H, int length, double percentage = .8);
+bond** formBonds(lattice* inputLattice);
+int checkBonds(bond** bonds, int length, lattice* L);
+int maxBonds(bond** bonds, int length);
+void printBonds(bond** bonds, int length);
+
 
 //basic Monte-Carlo
 /*int main(int argc, char*argv[])//fileIn fileOut numShifts 
@@ -122,56 +135,76 @@ int main(int argc, char* argv[])//template fileToChange
 	
 	templateLattice -> fillpdb(templateString);
 	changeLattice -> fillpdb(changeString);
-	
-	goal* theTemplate = new goal(templateLattice);
-	
-	double* densityOfStates = WangLandau(changeLattice,theTemplate);//get the density of states
-	int length = theTemplate -> getConnections()/2+1;
-	for(int i=0;i<length;i++)
-		cout << i << ": " << densityOfStates[i] << "\n";
+		
+	WangLandau2(changeLattice,templateLattice);//get the density of states
 	return 1;
 }
 
-double* WangLandau(lattice* inputLattice, goal* theTemplate)
+void WangLandau2(lattice* inputLattice, lattice* templateLattice)
 {
-	int length = theTemplate -> getConnections()/2+1;//length of histogram and density of states array
-	int sum = 0;//sum of all histogram values
+	
+	bond** bonds = formBonds(templateLattice);
+	printBonds(bonds,inputLattice->getNumElements());
+	int length = 10;
+	double* DoS = new double(length);
+	int* Hist = new int(length);
+	for(int i=0;i<length;i++)
+	{
+		Hist[i] = 0;
+		DoS[i] = 1.0;
+	}
+	for(int i=0;i<length;i++)
+		cout << i << ": " << Hist[i] << "\n";
+	return;
+}
+
+
+void WangLandau(lattice* inputLattice, lattice* templateLattice)
+{
+	bond** bonds = formBonds(templateLattice);
+	printBonds(bonds,inputLattice->getNumElements());
+	int length = maxBonds(bonds,inputLattice->getNumElements())+5;//length of histogram and density of states array (number of bonds+1)
+	cout << "length\t" << length << "\n";
 	int* H = new int(length);//histogram of number of unique visits
 	double* densityOfStates = new double(length);//array of the density of states for various energy levels [0,length)
 	for(int i=0;i<length;i++)//set the arrays to their initial values
 	{
-		H[i] = 0;
 		densityOfStates[i] = 1.0;
+		cout << "i: " << i << "\tDoS: " << densityOfStates[i] << "\n";
 	}
+	for(int i=0;i<length;i++)
+		H[i] = 0;
+	//print initial histogram and density of states
+	for(int i=0;i<length;i++)
+		cout << i << ": " << densityOfStates[i] << "    \t" << H[i] << "\n";
+	cout << "\n";		
 	
 	int oldIndex, newIndex; //energy states of new and old lattice
 	lattice* newLattice;
 	lattice* oldLattice;
 	newLattice = oldLattice = inputLattice;
-	oldIndex = newIndex = theTemplate -> check(oldLattice)/2;	
+	oldIndex = newIndex = checkBonds(bonds,newLattice->getNumElements(), newLattice);	
 	int counter = 0;//counter that goes through the while loop
-	int checkH =10000;//counter number at which the histogram is checked
+	int checkH =5;//counter number at which the histogram is checked
 	double f = 2.7;//length^(1/checkH+1);//f^checkH+1 = length
-	
 	while(f>1.1)//~exp(10^-8) this number was taken from the paper
 	{
 		while(!newLattice -> shiftRandom()){}//change a random value
-		newIndex = theTemplate -> check(newLattice)/2;
+		newIndex = checkBonds(bonds,newLattice->getNumElements(),newLattice);
 		
 		if(rand()/(double)RAND_MAX < min(densityOfStates[oldIndex]/densityOfStates[newIndex],1))
 		{
 			oldLattice -> copyLattice(newLattice);//confirm the switch
 			oldIndex = newIndex;
-			H[newIndex]++;
 		}
 		else
 		{
 			newLattice -> copyLattice(oldLattice);//go back
 			newIndex = oldIndex;
 		}
-		densityOfStates[newIndex] += f;
-
-		if(counter==0)//every checkH cycles
+		densityOfStates[newIndex] *= f;
+		H[newIndex]++;
+		if(counter==checkH-1)//every checkH cycles
 		{
 			for(int i=0;i<length;i++)
 				cout << i << ": " << densityOfStates[i] << "    \t" << H[i] << "\n";
@@ -186,7 +219,10 @@ double* WangLandau(lattice* inputLattice, goal* theTemplate)
 		}
 		counter = (counter+1)%(checkH);//loop from 0 to checkH-1
 	}
-	return densityOfStates;
+	for(int i=0;i<length;i++)
+		cout << i << ":\t" << densityOfStates[i] << "\n";
+	cout << "\n";
+	return;
 }
 	
 double min(double in1, double in2)
@@ -215,5 +251,63 @@ bool isFlat(int* H, int length, double percentage)
 	return true;
 }
 
+bond** formBonds(lattice* inputLattice)//create an array of bonds
+{
+	bond** bonds = new bond*[inputLattice -> getNumElements()];
+	for(int i=0;i<inputLattice->getNumElements();i++)
+	{
+		if(i<5 || i > 13)
+			bonds[i] = NULL;
+		else
+		{
+			bonds[i] = new bond;
+			bonds[i] -> num = i+4;
+			bonds[i] -> x = inputLattice -> getX(i+4) - inputLattice -> getX(i);
+			bonds[i] -> y = inputLattice -> getY(i+4) - inputLattice -> getY(i);
+			bonds[i] -> z = inputLattice -> getZ(i+4) - inputLattice -> getZ(i);	
+		}
+	}	
+	return bonds;
+}
 
+int checkBonds(bond** bonds, int length, lattice* L)
+{
+	point* temp;
+	int sum = 0;
+	for(int i=0;i<length;i++)
+	{
+		if(bonds[i] != NULL)
+		{	
+			temp = L->getPoint(L->getX(i)+bonds[i]->x ,L->getY(i)+bonds[i]->y, L->getZ(i)+bonds[i]->z);
+			if(temp != NULL)//make sure there's a point at point
+				if(temp->getNum() == bonds[i]->num)//check if that point is the right point
+					sum++;//if it is you have a bond
+		}
+	}
+	return sum;
+}
 
+int maxBonds(bond** bonds, int length)
+{
+	int sum = 0;
+	for(int i=0;i<length;i++)
+	{
+		if(bonds[i]!=NULL)
+			sum++;
+	}
+	return sum;
+}
+
+void printBonds(bond** bonds, int length)
+{
+	for(int i=0;i<length;i++)
+	{
+		cout << i << ":\t";
+		if(bonds[i]==NULL)
+			cout << "\n";
+		else
+			cout << bonds[i] -> num << "\t(" << bonds[i] -> x << "," << bonds[i] -> y << "," << bonds[i] -> z << ")\n";
+	}
+	cout << "\n";
+	return;
+}
