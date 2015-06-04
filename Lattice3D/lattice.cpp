@@ -638,6 +638,7 @@ int lattice::determineRotation(point* pivot)
 	}
 	else
 		cout << "Invalid inputs in determine rotation\n Before: " << before << "\nAfter: " << after << "\n";
+		return 0;
 }
 
 bool lattice::checkRotation(point* pivot, int rotation) //check the rotation of all points after the pivot with all points before the pivot

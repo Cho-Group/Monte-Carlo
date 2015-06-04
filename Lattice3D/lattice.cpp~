@@ -854,6 +854,11 @@ void lattice::recenter()
 	yOffset = (w-yMin-yMax)/2;
 	zOffset = (h-zMin-zMax)/2;
 	for(int i=0;i<numElements;i++)
+	{
+		shortList[i] -> setX(shortList[i]->getX()+xOffset);
+		shortList[i] -> setY(shortList[i]->getY()+yOffset);
+		shortList[i] -> setZ(shortList[i]->getZ()+zOffset);
+	}
 }
 
 
