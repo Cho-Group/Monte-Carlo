@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <iostream>
 #include "point.h"
 using namespace std;
 
@@ -27,6 +28,7 @@ class lattice
 		void rotateTail();
 		void fillpdb(string filename);//fill an empty lattice with pdb information
 		bool shiftRandom(); //try to move a random point, return true if the move is successful, else return false
+		bool shiftPoint(int n){return shiftPoint(shortList[n]->getX(),shortList[n]->getY(),shortList[n]->getZ());}
 		bool shiftPoint(int x, int y, int z);//try to move one point checking to see if that point is an end a corner or a hinge, return true if move is successfull else return false
 		bool emptyPoint(int x, int y, int z) {if(a[x][y][z]==NULL)return true; else return false;}
 		int* generateRandom();
@@ -39,7 +41,9 @@ class lattice
 		int getX(int num){return shortList[num] -> getX();}
 		int getY(int num){return shortList[num] -> getY();}
 		int getZ(int num){return shortList[num] -> getZ();}
-		point* getPoint(int x, int y, int z){if(a[x][y][z] == NULL)return NULL;else return a[x][y][z];}
+		void printNum(){for(int i=0;i<numElements;i++)cout << i << ": " << shortList[i] -> getNum() << "\n";}
+		point* getPoint(int x, int y, int z){return a[x][y][z];}
+		point* getPoint(int n){return shortList[n]};
 	private:
 		point**** a;//three dimentional array of points
 		point** shortList; //single dimentional array of all points

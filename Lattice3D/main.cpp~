@@ -1,10 +1,8 @@
 #include <iostream>
-//#include <stdlib.h>
+#include <fstream>
 #include <cmath>
-#include "goal.h"
 #include "lattice.h"
 #include "point.h"
-#include "neighbor.h"
 using namespace std;
 
 struct bond
@@ -16,12 +14,16 @@ struct bond
 };
 void WangLandau(lattice* inputLattice, lattice* templateLattice);
 void WangLandau2(lattice* inputLattice, lattice* templateLattice);
+void Metropolis(lattice* inputLattice, lattice* templateLattice);
 double min(double in1, double in2);
 bool isFlat(int* H, int length, double percentage = .8);
 bond** formBonds(lattice* inputLattice);
 int checkBonds(bond** bonds, int length, lattice* L);
+int checkBonds(int* bonds,int length, lattice* L);
 int maxBonds(bond** bonds, int length);
+int maxBonds(int* bonds, int length);
 void printBonds(bond** bonds, int length);
+double distanceBetween(point* point1, point* point2);
 
 
 //basic Monte-Carlo
@@ -136,74 +138,73 @@ int main(int argc, char* argv[])//template fileToChange
 	templateLattice -> fillpdb(templateString);
 	changeLattice -> fillpdb(changeString);
 		
-	WangLandau2(changeLattice,templateLattice);//get the density of states
+	WangLandau(changeLattice,templateLattice);//get the density of states
 	return 1;
-}
-
-void WangLandau2(lattice* inputLattice, lattice* templateLattice)
-{
-	
-	bond** bonds = formBonds(templateLattice);
-	printBonds(bonds,inputLattice->getNumElements());
-	int length = 10;
-	float* DoS = new float(length);
-	int* Hist = new int(length);
-	for(int i=0;i<length;i++)
-	{
-		Hist[i] = 0;
-		DoS[i] = 1.0;
-	}
-	for(int i=0;i<length;i++)
-		cout << i << ": " << Hist[i] << "\n";
-	return;
 }
 
 
 void WangLandau(lattice* inputLattice, lattice* templateLattice)
 {
-	bond** bonds = formBonds(templateLattice);
-	printBonds(bonds,inputLattice->getNumElements());
-	int length = maxBonds(bonds,inputLattice->getNumElements())+5;//length of histogram and density of states array (number of bonds+1)
-	cout << "length\t" << length << "\n";
-	int* H = new int(length);//histogram of number of unique visits
-	double* densityOfStates = new double(length);//array of the density of states for various energy levels [0,length)
+	int* bonds = new int[inputLattice->getNumElements()];
+	for(int i=0;i<inputLattice->getNumElements();i++)
+	{
+		if(i<5 || i>13)
+			bonds[i] = -1;
+		else
+			bonds[i] = i+4; 
+	}
+	int length = maxBonds(bonds,inputLattice->getNumElements())+1;//length of histogram and density of states array (number of bonds+1)
+	//histogram of number of unique visits
+	double* densityOfStates = new double[length];//array of the density of states for various energy levels [0,length)
+	int* H = new int[length];
 	for(int i=0;i<length;i++)//set the arrays to their initial values
 	{
 		densityOfStates[i] = 1.0;
-		cout << "i: " << i << "\tDoS: " << densityOfStates[i] << "\n";
+		H[i] = 0.0;
 	}
-	for(int i=0;i<length;i++)
-		H[i] = 0;
 	//print initial histogram and density of states
 	for(int i=0;i<length;i++)
 		cout << i << ": " << densityOfStates[i] << "    \t" << H[i] << "\n";
 	cout << "\n";		
 	
 	int oldIndex, newIndex; //energy states of new and old lattice
-	lattice* newLattice;
-	lattice* oldLattice;
-	newLattice = oldLattice = inputLattice;
+	lattice* newLattice = new lattice(inputLattice->getNumElements());
+	lattice* oldLattice = new lattice(inputLattice->getNumElements());
+	newLattice -> copyLattice(inputLattice);
+	oldLattice -> copyLattice(inputLattice);
 	oldIndex = newIndex = checkBonds(bonds,newLattice->getNumElements(), newLattice);	
 	int counter = 0;//counter that goes through the while loop
-	int checkH =5;//counter number at which the histogram is checked
+	int checkH = 1000;//counter number at which the histogram is checked
 	double f = 2.7;//length^(1/checkH+1);//f^checkH+1 = length
-	while(f>1.1)//~exp(10^-8) this number was taken from the paper
+	
+	ofstream output;
+	output.open("WangLandauHistogram");
+	output << "Num Bonds\tEnd to End Distance\n";
+	while(f>1.001)//~exp(10^-8) this number was taken from the paper
 	{
 		while(!newLattice -> shiftRandom()){}//change a random value
 		newIndex = checkBonds(bonds,newLattice->getNumElements(),newLattice);
-		
-		if(rand()/(double)RAND_MAX < min(densityOfStates[oldIndex]/densityOfStates[newIndex],1))
+		if(newIndex==oldIndex)
 		{
-			oldLattice -> copyLattice(newLattice);//confirm the switch
-			oldIndex = newIndex;
+			oldLattice -> copyLattice(newLattice);
 		}
 		else
 		{
-			newLattice -> copyLattice(oldLattice);//go back
-			newIndex = oldIndex;
+			if(rand()/(double)RAND_MAX < min(densityOfStates[oldIndex]/densityOfStates[newIndex],1))
+			{
+				oldLattice -> copyLattice(newLattice);//confirm the switch
+				oldIndex = newIndex;
+			}
+			else
+			{
+				newLattice -> copyLattice(oldLattice);//go back
+				newIndex = oldIndex;
+			}
+		
+			densityOfStates[newIndex] = exp(log(densityOfStates[newIndex]) + log(f));//formula from paper
+			H[newIndex]++;
+			
 		}
-		densityOfStates[newIndex] *= f;
-		H[newIndex]++;
 		if(counter==checkH-1)//every checkH cycles
 		{
 			for(int i=0;i<length;i++)
@@ -218,10 +219,54 @@ void WangLandau(lattice* inputLattice, lattice* templateLattice)
 			}
 		}
 		counter = (counter+1)%(checkH);//loop from 0 to checkH-1
+		output << newIndex << "\t" << newLattice->end2end() << "\n";
 	}
+	output.close();
 	for(int i=0;i<length;i++)
 		cout << i << ":\t" << densityOfStates[i] << "\n";
 	cout << "\n";
+	return;
+}
+
+void Metropolis(lattice* inputLattice, lattice* templateLattice)
+{
+	int* bonds = new int[inputLattice->getNumElements()];
+	for(int i=0;i<inputLattice->getNumElements();i++)
+	{
+		if(i<5 || i>13)
+			bonds[i] = -1;
+		else
+			bonds[i] = i+4; 
+	}
+	
+	int max = maxBonds(bonds,inputLattice->getNumElements());//max number of bonds
+	
+	lattice* newLattice;
+	lattice* oldLattice;
+	newLattice = oldLattice = inputLattice;
+	int current = checkBonds(bonds,newLattice->getNumElements(),newLattice);
+	int past = current;	
+	while(current < max)
+	{
+		while(!newLattice -> shiftRandom()){}
+		current = checkBonds(bonds,newLattice->getNumElements(),newLattice);
+		if(current >= past)
+		{
+			if(current > past)
+			{
+				cout << "Moving to State: " << current << "\n";
+				newLattice -> printLattice();
+			}
+			past = current;
+			oldLattice -> copyLattice(newLattice);
+		}
+		else
+		{
+			current = past;
+			newLattice -> copyLattice(oldLattice);
+		}		
+	}
+	cout << "end process\n";
 	return;
 }
 	
@@ -287,12 +332,39 @@ int checkBonds(bond** bonds, int length, lattice* L)
 	return sum;
 }
 
+int checkBonds(int* bonds, int length, lattice* L)
+{
+	double distance;
+	int sum = 0;
+	for(int i=0;i<length;i++)
+	{
+		if(bonds[i] != -1)//ignore nonbonded elements
+		{
+			distance = distanceBetween(L->getPoint(i),L->getPoint(bonds[i]));
+			if(distance > 1.41421 && distance < 2.4494)//between sqrt(2) and sqrt(6)
+				sum++;
+		}
+	}
+	return sum;
+}
+
 int maxBonds(bond** bonds, int length)
 {
 	int sum = 0;
 	for(int i=0;i<length;i++)
 	{
 		if(bonds[i]!=NULL)
+			sum++;
+	}
+	return sum;
+}
+
+int maxBonds(int* bonds, int length)
+{
+	int sum = 0;
+	for(int i=0;i<length;i++)
+	{
+		if(bonds[i] != -1)
 			sum++;
 	}
 	return sum;
@@ -311,3 +383,24 @@ void printBonds(bond** bonds, int length)
 	cout << "\n";
 	return;
 }
+
+double distanceBetween(point* point1, point* point2)
+{
+	int x1 = point1->getX();
+	int y1 = point1->getY();
+	int z1 = point1->getZ();
+	int x2 = point2->getX();
+	int y2 = point2->getY();
+	int z2 = point2->getZ();
+	double toReturn;
+	
+	toReturn = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2);
+	toReturn = sqrt(toReturn);
+	return toReturn;
+}
+
+
+
+
+
+

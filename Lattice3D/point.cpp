@@ -98,8 +98,6 @@ void point::copyPoint(point* otherPoint)//copy all values from otherpoint into t
 {
 	directionIn = otherPoint -> getDirectionIn();
 	directionOut = otherPoint -> getDirectionOut();
-	pointIn = otherPoint -> getPointIn();
-	pointOut = otherPoint -> getPointOut();
 	x = otherPoint -> getX();
 	y = otherPoint -> getY();
 	z = otherPoint -> getZ();

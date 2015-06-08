@@ -50,13 +50,13 @@ lattice::lattice(int n)
 	h = 100;
 	numElements = n;
 	head = NULL;
-	a = new point***[100];
+	a = new point***[l];
 	for(int i=0;i<l;i++)
 	{
-		a[i] = new point**[100];
+		a[i] = new point**[w];
 		for(int j=0;j<w;j++)
 		{
-			a[i][j] = new point*[100];
+			a[i][j] = new point*[h];
 			for(int k=0;k<h;k++)
 				a[i][j][k] = NULL;
 		}
@@ -66,12 +66,10 @@ lattice::lattice(int n)
 	model = 0;
 	shortList = new point*[numElements];
 	point* trace = head;
-	int i = 0;
-	while(trace!=NULL)
+	for(int i=0;i<numElements;i++)
 	{
 		shortList[i] = trace;
 		trace = trace->getPointOut();
-		i++;
 	}
 	
 	
@@ -553,7 +551,7 @@ void lattice::printLattice(const char* fileOut)//prints data in pdb format to a 
 void lattice::printLattice()//prints data in pdb format to command line
 {	
 	point* trace = head;
-	int num = 1;
+	int num = 0;
 	printf("MODEL 0\n");
 	while(trace != NULL)
 	{
@@ -803,6 +801,11 @@ float lattice::end2end()//return the distance between the first and the last poi
 
 void lattice::copyLattice(lattice* otherLattice)//create an exact copy of another lattice
 {
+	if(numElements != otherLattice->getNumElements())
+	{	
+		cout << "ERROR: not the same number of elements\n";
+		return;
+	}
 	int x,y,z;
 	model = otherLattice -> getModel();
 	clearArray();
@@ -813,6 +816,7 @@ void lattice::copyLattice(lattice* otherLattice)//create an exact copy of anothe
 		y = shortList[i] -> getY();
 		z = shortList[i] -> getZ();
 		a[x][y][z] = shortList[i];
+		//cout << "x " << x << "\ty " << y << "\tz " << z << "\n";
 	}
 	return;
 }

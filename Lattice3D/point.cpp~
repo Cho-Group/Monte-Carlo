@@ -53,7 +53,7 @@ point::~point()
 	//nothing to do here
 }
 
-point* point::generateNew(int d, int l, int w, int h)
+point* point::generateNew(int d, int l, int w, int h)//generates a new point to the direction d of this
 {
 	directionOut = d;
 	pointOut = new point(this, d, l, w, h);
@@ -94,7 +94,7 @@ void point::printPoint()
 	cout << "X:" << x << " Y:" << y << " Z:" << z << "\n";
 }
 
-void point::copyPoint(point* otherPoint)
+void point::copyPoint(point* otherPoint)//copy all values from otherpoint into this
 {
 	directionIn = otherPoint -> getDirectionIn();
 	directionOut = otherPoint -> getDirectionOut();
